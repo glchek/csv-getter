@@ -1,0 +1,30 @@
+name: Update VPN List
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # Каждые 6 часов
+  workflow_dispatch: # Возможность запустить кнопку вручную
+
+permissions:
+  contents: write
+
+jobs:
+  update-list:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Fetch VPNGate List
+        run: |
+          curl -L -o list.csv "https://www.vpngate.net/api/iphone/"
+          
+          # sed -i "1s/^/# Updated at $(date)\n/" list.csv
+
+      - name: Commit and Push
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add list.csv
+          git commit -m "Auto-update VPN list" || exit 0
+          git push
